@@ -184,32 +184,23 @@ function check2(result1) {
     let ratelobj = {};
     let obj = {};
     result1.forEach(item => {
-
-
         if (item.Middle_price != '--') {
             sum += 1
         }
         count = sum / 6;
+    })
+
+    result1.forEach(item => {
+       
         if (typeof (ratelobj[item.Bankname]) == "undefined") {
             ratelobj[item.Bankname] = 0;
         }
-
-
-        ratelobj[item.Bankname] += (parseFloat(item.Middle_price));
-
-
+        ratelobj[item.Bankname] += (parseFloat(item.Middle_price))/count;
     });
-    const keys = Object.keys(ratelobj);
-    keys.forEach(element => {
+  
 
-        var total = ratelobj[element] / count;
-        //obj[item.Bankname] += total
+    
 
-
-
-    })
-
-    console.log('obj', obj);
     console.log('ratelobj', ratelobj);
 
 
