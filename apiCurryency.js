@@ -182,30 +182,39 @@ function check2(result1) {
     var sum = 0;
     var count;
     let ratelobj = {};
-    let obj = {};
+    let AVGOBJ = {};
+
+    
     result1.forEach(item => {
         if (item.Middle_price != '--') {
-            sum += 1
+            if (typeof (AVGOBJ[item.Bankname]) == "undefined") {
+                AVGOBJ[item.Bankname] = 0;
+            }
+            AVGOBJ[item.Bankname] += 1;
         }
-        count = sum / 6;
-    })
+    });
+
+    console.log('AVGOBJ', AVGOBJ);
 
     result1.forEach(item => {
-       
+
+        if (item.Middle_price == '--') {
+            item.Middle_price = '0';
+        }
         if (typeof (ratelobj[item.Bankname]) == "undefined") {
             ratelobj[item.Bankname] = 0;
         }
-        ratelobj[item.Bankname] += (parseFloat(item.Middle_price))/count;
+        ratelobj[item.Bankname] += (parseFloat(item.Middle_price)) ;
     });
-  
 
-    
+
+    for(key in AVGOBJ){
+        let avg = ratelobj[key]  / AVGOBJ[key];
+        console.log('avg',avg);
+        ratelobj[key] =avg
+     }
 
     console.log('ratelobj', ratelobj);
-
-
-
-
     return ratelobj;
 }
 
