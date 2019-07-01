@@ -74,21 +74,10 @@ app.get('/api/Currency/:minorCur', (req, res, params) => {
         });
 
         var Avgrate = check1(datevalue);
-        console.log('123', Avgrate);
+        // console.log('123', Avgrate);
         const Avgkey = Object.keys(Avgrate);
 
 
-        Avgkey.forEach(x => {
-
-            //console.log(' Avgrate[x]', Avgrate[x]);
-            const Mid = Avgrate[x]
-
-
-            if (result_bank.includes(x) == true) {
-                result.push(Object.assign({ Mid }));
-            }
-
-        })
 
 
 
@@ -106,7 +95,17 @@ app.get('/api/Currency/:minorCur', (req, res, params) => {
             const minorCur = table_td.eq(1).text();// 幣種
             const Current_purchase = (table_td.eq(2).text().trim() == '--') ? '--' : (1 / (parseFloat(table_td.eq(2).text()))).toFixed(5);//現匯買入
             const Cash_sale = (table_td.eq(4).text().trim() == '--') ? '--' : (1 / (parseFloat(table_td.eq(4).text()))).toFixed(5);// 現匯賣出
-            const Middle_price = (table_td.eq(6).text().trim() == '--') ? '--' : (1 / (parseFloat(table_td.eq(6).text()))).toFixed(5);  //  平均匯率
+            //const Middle_price = (table_td.eq(6).text().trim() == '--') ? '--' : (1 / (parseFloat(table_td.eq(6).text()))).toFixed(5);  //  平均匯率
+
+            const Middle = table_td.eq(6).text().trim();
+            var Middle_price = '--';
+            if (Middle == '--') {
+                if (Current_purchase != '--' && Current_purchase != '--') {
+                    Middle_price = (((1 / (parseFloat(table_td.eq(2).text()))) + (1 / (parseFloat(table_td.eq(4).text())))) / 2).toFixed(5);
+                }
+            } else {
+                Middle_price = (1 / (parseFloat(table_td.eq(6).text()))).toFixed(5);
+            }
 
             const date = table_td.eq(7).text().trim().replace(/月/, '-').replace(/日/, '');
 
@@ -118,12 +117,29 @@ app.get('/api/Currency/:minorCur', (req, res, params) => {
 
             // 建立物件並(push)存入結果
             if (result_bank.includes(Bankname) == true) {
-                result.push(Object.assign({ Bankname, minorCur, Current_purchase, Cash_sale, Middle_price, dateString }));
+
+                Avgkey.forEach(x => {
+
+                    //console.log(' Avgrate[x]', Avgrate[x]);
+                    const Mid = Avgrate[x].toFixed(5);
+
+
+                    if (Bankname.includes(x) == true) {
+                        result.push(Object.assign({ Bankname, minorCur, Current_purchase, Cash_sale, Middle_price, Mid, dateString }));
+
+                    }
+
+                })
+
+
+
+
+                // result.push(Object.assign({ Bankname, minorCur, Current_purchase, Cash_sale, Middle_price, dateString }));
             }
 
         }
         // 在終端機(console)列出結果
-        console.log(result);
+        // console.log(result);
         res.send(result);
     });
 });
@@ -142,7 +158,7 @@ app.listen(config.apiPort, () => {
 
 function check1(datevalue) {
     const result2 = []; // 建立一個歷史儲存結果的容器
-    console.log('Avgrate', 'Avgrate');
+    // console.log('Avgrate', 'Avgrate');
     for (let j = 0; j < 7; j++) {
         const date7 = dateFormat(new Date()).subtract(j, 'days').format('YYYYMMDD');//今日-7時間
         var checkDir1 = fs.existsSync("./value/" + date7 + datevalue + ".json");
@@ -152,7 +168,7 @@ function check1(datevalue) {
             const result1 = ramda.flatten(result2)
             var Avgrate1 = check2(result1);
 
-            console.log('Avgrate1', Avgrate1);
+            //  console.log('Avgrate1', Avgrate1);
         }
     }
 
@@ -164,18 +180,39 @@ function check1(datevalue) {
 function check2(result1) {
 
     var sum = 0;
-    var count = 1;
+    var count;
     let ratelobj = {};
+    let obj = {};
     result1.forEach(item => {
+
+
+        if (item.Middle_price != '--') {
+            sum += 1
+        }
+        count = sum / 6;
         if (typeof (ratelobj[item.Bankname]) == "undefined") {
             ratelobj[item.Bankname] = 0;
         }
 
-        ratelobj[item.Bankname] += (parseFloat(item.Middle_price)) / 2;
+
+        ratelobj[item.Bankname] += (parseFloat(item.Middle_price));
+
 
     });
+    const keys = Object.keys(ratelobj);
+    keys.forEach(element => {
 
-    // console.log('ratelobj', ratelobj);
+        var total = ratelobj[element] / count;
+        //obj[item.Bankname] += total
+
+
+
+    })
+
+    console.log('obj', obj);
+    console.log('ratelobj', ratelobj);
+
+
 
 
     return ratelobj;
