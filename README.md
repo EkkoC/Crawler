@@ -22,5 +22,9 @@ node test.js
 
 node apiCurryency.js
 
+http.get('/api/Currency/:minorCur')
+
+可輸入幣別例如:localhost:4200/api/Currency/usd
+
 
 
